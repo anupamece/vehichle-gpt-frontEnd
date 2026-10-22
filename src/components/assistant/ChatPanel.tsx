@@ -89,7 +89,7 @@ export default function ChatPanel() {
     try {
       // ChatGPT-style reasoning delay + backend API execution
       const [response] = await Promise.all([
-        sendChatMessage(text),
+        sendChatMessage(text, selectedVehicleId),
         new Promise<void>((resolve) => setTimeout(resolve, 1200)),
       ]);
       const assistantMsg: ChatMessageType = {

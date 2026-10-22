@@ -93,13 +93,27 @@ export async function fetchDrivingModeEnergy(
   return data;
 }
 
+/** Dedicated timeout for local LLM inference requests (90 seconds). */
+export const LLM_QUERY_TIMEOUT_MS = 90_000;
+
 /**
  * Endpoint 6: POST /api/query
+ * Uses dedicated 90-second timeout for local Ollama LLM inference.
  */
-export async function submitQuery(question: string): Promise<QueryResponse> {
-  const { data } = await client.post<QueryResponse>("/api/query", {
-    question,
-  });
+export async function submitQuery(
+  question: string,
+  vehicleId?: string,
+): Promise<QueryResponse> {
+  const { data } = await client.post<QueryResponse>(
+    "/api/query",
+    {
+      question,
+      vehicle_id: vehicleId,
+    },
+    {
+      timeout: LLM_QUERY_TIMEOUT_MS,
+    },
+  );
   return data;
 }
 
@@ -135,16 +149,26 @@ export async function fetchEnergyData(): Promise<EnergyDataPoint[]> {
   return data;
 }
 
-export async function sendChatMessage(message: string): Promise<{
+export async function sendChatMessage(
+  message: string,
+  vehicleId?: string,
+): Promise<{
   reply: string;
   intent?: string;
   data?: Record<string, unknown>;
   sources?: string[];
   warnings?: string[];
 }> {
-  const { data } = await client.post<QueryResponse>("/api/query", {
-    question: message,
-  });
+  const { data } = await client.post<QueryResponse>(
+    "/api/query",
+    {
+      question: message,
+      vehicle_id: vehicleId,
+    },
+    {
+      timeout: LLM_QUERY_TIMEOUT_MS,
+    },
+  );
   return {
     reply: data.answer || data.reply || "No response received.",
     intent: data.intent,
